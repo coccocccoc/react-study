@@ -4,7 +4,8 @@ import Button from 'react-bootstrap/Button';
 import { useContext, useEffect, useState } from "react";
 import { Context } from "../index";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 // 게시물 수정 화면 :
 // 1. 게시물의 모든 데이터 출력
@@ -34,13 +35,19 @@ const BoardModify = () => {
   // URL 주소에 포함되어 있는 no 파라미터 꺼내기
   const params = useParams()
 
+  // navigate: 페이지 이동에 사용하는 도구
+  const navigate = useNavigate()
+  
+  // store에서 token 가져오기
+  const token = useSelector(state => state.member.token)
+
   // axios를 사용해서 api 호출
   const apicall = async () => {
     // ex) board/read?no=1
     // 인자: URL 주소, 헤더(토큰)
     const response = await axios.get(`${host}/board/read?no=${params.no}`, {
       headers: {
-        Authorization: 'eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3NTAyOTY3NjUsImV4cCI6MTc1Mjg4ODc2NSwic3ViIjoiYWJjIn0.F4LL5PFsURKcNXxnNP7_n9HcXD5mx-9JcrwqxTUcdvo'
+        Authorization: token
       }
     })
 
@@ -69,11 +76,77 @@ const BoardModify = () => {
     // 특정 프로퍼티만 교체
     // 예: newBoard[title] = 'abc'
     // newBoard[]
-    newBoard[name] = value
+    if (name === 'uploadFile') {
+      newBoard[name] = files[0]
+    } else {
+      newBoard[name] = value
+    }
+    
 
     // 상태 업데이트
     setBoard(newBoard)
 
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault() // 페이지 이동 방지
+    
+    // api를 호출하여 게시물 수정 처리
+    // axios의 함수는 메소드 종류를 보고 선택
+    // 인자: 주소, 바디데이터, 헤더
+
+    // 파라미터의 형식
+    // 1. URL 파라미터
+    // 2. 바디데이터 - JSON OR XML 데이터
+    // 3. 바디데이터 - 폼데이터
+
+    // 게시물 데이터를 폼데이터로 생성
+    const formData = new FormData()
+    formData.append('no', board.no)
+    formData.append('title', board.title)
+    formData.append('content', board.content)
+    // 파일은 값이 있으면 담기
+    if (board.uploadFile != null) {
+      formData.append('uploadFile', board.uploadFile)
+    }
+    
+
+    // axios는 내부에서 promise 객체를 사용함
+    // 원래는 promise가 api를 호출하고 기다렸다가 응답을 받아야 하는데
+    // await가 없기 때문에 응답을 받지 못한채로 promise 객체를 받음
+    const response = await axios.put(`${host}/board/modify`, formData, {
+      headers: {
+        Authorization: token
+      }
+    })
+
+    // API 호출 후 처리
+    // 수정이 끝났으면 상세화면으로 이동
+    // api가 정상적으로 호출이 되었다면 204 코드 반환
+    if (response.status === 204) {
+      // 실제 랜더링: /board/read/1
+      navigate(`/board/read/${board.no}`)
+    }
+
+  }
+
+  // 
+  const handleRemove = async () => {
+    // 게시물 삭제 api 호출
+
+    // 인자: 주소, 헤더
+    // 주소 예시: localhost:8080/board/remove?no=1
+    const response = await axios.delete(`${host}/board/remove?no=${board.no}`, {
+      headers: {
+        Authorization: token
+      }
+    })
+
+    // API 요청에 성공했으면 상세x 리스트o
+    if (response.status === 204) {
+      // react 내부 주소
+      navigate('/board/list')
+    }
   }
 
   
@@ -81,10 +154,11 @@ const BoardModify = () => {
     <CustomCard>
       <CustomContainer>
         <h3>게시물 수정</h3>
-
+        {/* 폼 안에 버튼을 클릭하면 submit 이벤트가 발생 */}
+        {/* 사용자가 수정한 게시물 데이터가 서버로 전송 */}
         {
           board !== null &&
-          <Form>
+          <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3" controlId="board.no">
             <Form.Label>번호</Form.Label>
             <Form.Control type="text" value={board.no} readOnly/>
@@ -121,7 +195,7 @@ const BoardModify = () => {
           </Form.Group>
 
           <Button variant="secondary" type="submit">저장</Button>
-          <Button variant="danger">삭제</Button>
+          <Button variant="danger" onClick={handleRemove}>삭제</Button>
 
         </Form>
         }

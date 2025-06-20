@@ -9,6 +9,7 @@ import Col from 'react-bootstrap/Col';
 import { use, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { Context } from "../index";
+import { useSelector } from "react-redux";
 
 // 가짜 데이터
 // API를 호출해서 데이터베이스에 있는 진짜 데이터 가져오기!
@@ -29,6 +30,8 @@ const BoardList = () => {
   // 저장소에서 API 주소 꺼내기
   // 구조 분해
   const { host } = useContext(Context)
+
+  const token = useSelector(state => state.member.token)
   
   // API 호출
   // await은 async 함수 안에서만 사용 가능
@@ -36,6 +39,9 @@ const BoardList = () => {
   // api 기본 주소를 전역으로 관리 ( http://localhost:8080 )
   // 다른 컴포넌트에서도 써야하니까...
   // axios에서 주소 변경
+  // 회원이 사라지면 발급한 토큰을 사용할 수 없게 됨
+
+  // api를 호출할 때 토큰 교체
   const apicall = async() => {
 
     // axios ajax fetch 와 같이 api를 호출하는 함수는 비동기 함수
@@ -43,7 +49,7 @@ const BoardList = () => {
 
     const respone = await axios.get(`${host}/board/list`, {
       headers: {
-        Authorization: 'eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3NTAyOTY3NjUsImV4cCI6MTc1Mjg4ODc2NSwic3ViIjoiYWJjIn0.F4LL5PFsURKcNXxnNP7_n9HcXD5mx-9JcrwqxTUcdvo'
+        Authorization: token
       }
     })
 

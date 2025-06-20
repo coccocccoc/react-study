@@ -5,10 +5,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
 import { Context } from "../index";
+import { useSelector } from 'react-redux';
 
-
-// 가짜 데이터
-// const board = {no :1, title:"1번", content:"1번입니다", writer:"마돈나" ,regDate:"2025-06-01", modDate:"2025-06-02"}
 
 
 const BoardDetail = () => {
@@ -30,14 +28,16 @@ const BoardDetail = () => {
 
   // context 저장소에서 host 가져오기
   // object 구조 분해
-  const {host} = useContext(Context)
+  const { host } = useContext(Context)
+  
+  const token = useSelector(state => state.member.token)
 
   const apicall = async () => {
     // axios로 api 호출
     // ex) http://localhost:8080/board/read?no=1
     const response = await axios.get(`${host}/board/read?no=${params.no}`, {
       headers: {
-        Authorization: 'eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3NTAyOTY3NjUsImV4cCI6MTc1Mjg4ODc2NSwic3ViIjoiYWJjIn0.F4LL5PFsURKcNXxnNP7_n9HcXD5mx-9JcrwqxTUcdvo'
+        Authorization: token
       }
     })
 

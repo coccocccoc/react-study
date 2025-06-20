@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useContext, useState } from 'react';
 import { Context } from "../index";
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 // 새로운 게시물 정보를 입력받는 화면
 // 게시물 데이터 : 번호, 제목, 내용, 작성자, 등록일, 수정일
@@ -27,6 +28,9 @@ const BoardRegister = () => {
   // navigate: 페이지 이동시 사용
   const navigate = useNavigate()
 
+  // redux store에서 로그인 데이터(토큰) 가져오기
+  const token = useSelector(state => state.member.token)
+
   // 이벤트 함수 정의
   // 버튼 클릭시 페이지 이동 방지
   const handlerSubmit = async (event) => {
@@ -46,7 +50,7 @@ const BoardRegister = () => {
     // post 인자: 주소, 게시물 데이터, 헤더
     const response = await axios.post(`${host}/board/register`, formData, {
       headers: {
-        Authorization: 'eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3NTAyOTY3NjUsImV4cCI6MTc1Mjg4ODc2NSwic3ViIjoiYWJjIn0.F4LL5PFsURKcNXxnNP7_n9HcXD5mx-9JcrwqxTUcdvo'
+        Authorization: token
       }
     })
 
@@ -89,7 +93,6 @@ const BoardRegister = () => {
 
     // 상태 업데이트
     setBoard(newBoard)
-    console.log(newBoard)
   }
 
 
