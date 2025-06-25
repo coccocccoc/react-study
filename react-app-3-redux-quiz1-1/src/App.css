@@ -1,0 +1,6 @@
+/* box라는 div 태그의 자식들을 정렬 */
+.box{
+  display: flex;
+  flex-direction: row; /* 정렬 방향: 가로 */
+  gap: 5px; /* 아이템 간의 간격 */ 
+}
